@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <title>Document</title>
+  <style>
+    *{
+      box-sizing: border-box;
+      margin: 0px;
+      padding: 0px;
+      font-family: Arial;
+    }
+    main{
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    section{
+      height: 70vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-style: solid;
+      border-width: 2px;
+    }
+    section:nth-child(1) {
+      border-color: green;
+    }
+    section:nth-child(2){
+      border-color: blue;
+    }
+    section:nth-child(3){
+      border-color: red;
+    }
+    section:nth-child(4){
+      border-color: gray;
+    }
+    .navigation-bar{
+      position: fixed;
+      display: flex;
+      gap: 50px;
+      top: 90%;
+      left: 50%;
+      transform: translate(-50%,0%);
+
+      & > div{
+        cursor: pointer;
+        transition: transform 0.3s ease;
+        position: relative;
+
+        &:nth-child(1)::before{
+          position: absolute;
+          top: 100%;
+          content: '';
+          height: 5px;
+          left: 50%;
+          transform: translate(0%,-50%);
+          background-color: red;
+        }
+      }
+
+      & .navigation-pointer{
+        position: absolute;
+        top: 100%;
+        transition: left 0.3s ease;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section>
+      <div>Home</div>
+    </section>
+    <section>
+      <div>Services</div>
+    </section>
+    <section>
+      <div>About</div>
+    </section>
+    <section>
+      <div>Contact</div>
+    </section>
+
+    <div class="navigation-bar">
+      <div>Home</div>
+      <div>Services</div>
+      <div>About</div>
+      <div>Contact</div>
+      <div class="navigation-pointer" style="left: 12px;">
+        <i class="fa-solid fa-chevron-up"></i>
+      </div>
+    </div>
+  </main>
+
+  <script>
+
+    function sectionCenterPx(){
+      const sections = [...document.querySelectorAll('section')];
+      return sections.reduce((acc,sectionEl,index) => {
+        const offsets = sectionEl.getBoundingClientRect();
+        const padding = (window.innerHeight - offsets.height) / 2;
+        const scrollCenterPixels =Math.round(offsets.top - padding);
+        acc.push(!index  ? 0 : scrollCenterPixels);
+        return acc;
+      },[]);
+    };
+
+    const scrolledPxData = sectionCenterPx();
+
+    let currentSection = 1;
+    window.addEventListener('scroll',(e)=>{
+      const menuOne = document.querySelector(`.navigation-bar > div:nth-child(${currentSection})`).getBoundingClientRect();
+      const menuTwo = document.querySelector(`.navigation-bar > div:nth-child(${currentSection + 1})`).getBoundingClientRect();
+      const distance = (menuTwo.left + menuTwo.width / 2) - (menuOne.left + menuOne.width / 2);
+      const cursorConstant =  distance / scrolledPxData[currentSection];
+      document.querySelector('.navigation-pointer').style.left = `${(this.scrollY * cursorConstant) + 16}px`;
+    });
+  </script>
+</body>
+</html>
