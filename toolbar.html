@@ -49,8 +49,8 @@
         cursor: pointer;
         transition: transform 0.3s ease;
         position: relative;
-
-        &:nth-child(1)::before{
+      
+        &::before{
           position: absolute;
           top: 100%;
           content: '';
@@ -58,13 +58,16 @@
           left: 50%;
           transform: translate(0%,-50%);
           background-color: red;
+          width:var(--menu-distance);
+          transition: width 0.3s ease;
         }
+        
       }
 
       & .navigation-pointer{
         position: absolute;
         top: 100%;
-        transition: left 0.3s ease;
+        transition: transform 0.3s ease;
       }
     }
   </style>
@@ -89,34 +92,76 @@
       <div>Services</div>
       <div>About</div>
       <div>Contact</div>
-      <div class="navigation-pointer" style="left: 12px;">
+      <div class="navigation-pointer">
         <i class="fa-solid fa-chevron-up"></i>
       </div>
     </div>
   </main>
 
   <script>
+    const scrolledPxData = scrollDistancePx();
+    const pointerDistancePxData = pointerDistancePx();
 
-    function sectionCenterPx(){
+    function scrollDistancePx(){
+      //iterate through each section 
       const sections = [...document.querySelectorAll('section')];
-      return sections.reduce((acc,sectionEl,index) => {
+      return sections.map((sectionEl,index) => {
         const offsets = sectionEl.getBoundingClientRect();
         const padding = (window.innerHeight - offsets.height) / 2;
-        const scrollCenterPixels =Math.round(offsets.top - padding);
-        acc.push(!index  ? 0 : scrollCenterPixels);
+        //if the section is  the first  or if its higher in height then the viewport, the scroll distance would be its top value 
+        //if the section is last & fits in viewport , then scroll it such that there is some space on top of it
+        //if the section is none of the above then scroll it such that its in the center of the viewport
+        const scrollDistancePixels = !index || padding < 0 ? offsets.top : index === sections.length - 1 ?   Math.round(offsets.top - padding * 2)  :  Math.round(offsets.top - padding);
+        return scrollDistancePixels;
+      });
+    };
+
+    function pointerDistancePx(){
+      const menus =  [...document.querySelectorAll(`.navigation-bar > div`)];
+      return menus.reduce((acc,menuEl,index)=>{
+        if(index < menus.length - 2){
+          //simply calculate the distance between the centers of each menu ,
+          //and add them up as we go more towards right
+          const menuOne = menuEl.getBoundingClientRect();
+          const menuTwo = menuEl.nextElementSibling.getBoundingClientRect();
+          const pointerDistance = (menuTwo.left + menuTwo.width / 2) - (menuOne.left + menuOne.width / 2);
+          const pointerValidDistance = pointerDistance + (acc[index - 1] ? acc[index - 1] : 0);
+          acc.push(pointerValidDistance)
+        };
         return acc;
       },[]);
     };
 
-    const scrolledPxData = sectionCenterPx();
+    //initially place the pointer in the very center of the first menu
+    const homeMenu = document.querySelector('.navigation-bar > div:nth-child(1)').clientWidth / 2;
+    const pointer = document.querySelector('.navigation-pointer');
+    pointer.style.transform = `translateX(${(homeMenu - pointer.clientWidth / 2)}px)`;
 
-    let currentSection = 1;
     window.addEventListener('scroll',(e)=>{
-      const menuOne = document.querySelector(`.navigation-bar > div:nth-child(${currentSection})`).getBoundingClientRect();
-      const menuTwo = document.querySelector(`.navigation-bar > div:nth-child(${currentSection + 1})`).getBoundingClientRect();
-      const distance = (menuTwo.left + menuTwo.width / 2) - (menuOne.left + menuOne.width / 2);
-      const cursorConstant =  distance / scrolledPxData[currentSection];
-      document.querySelector('.navigation-pointer').style.left = `${(this.scrollY * cursorConstant) + 16}px`;
+      const pointer = document.querySelector('.navigation-pointer');
+      //find to which section is the user scrolling
+        let currentSection;
+        for (const scrollDistance of scrolledPxData){
+          if(this.scrollY < scrollDistance){
+            currentSection = scrolledPxData.indexOf(scrollDistance);
+            break;
+          }
+        }
+        if(currentSection){
+          document.querySelectorAll(`.navigation-bar > div`).forEach(divEl => divEl.style = '');
+          //using the index of the section the user is scrolling to , get the distance the 
+          //pointer has to travel until the user scrolls to the appropriate section
+          const scrollDistance = scrolledPxData[currentSection];
+          const pointerDistance = pointerDistancePxData[currentSection - 1];
+          //for understanding purposes display the distance  the pointer will travel
+          document.querySelector(`.navigation-bar > div:nth-child(1)`).style = `--menu-distance:${pointerDistance}px;`;
+          //get the constant(the px's the pointer/cursor should travel per px scroll of the page)
+          const cursorConstant = pointerDistance / scrollDistance;
+          pointer.style.transform = `translateX(${(this.scrollY * cursorConstant) + pointer.clientWidth}px)`;
+        } else {
+          //if the user has scrolled past the last section...move the pointer in the last menu
+          pointer.style.transform = `translateX(${pointerDistancePxData[pointerDistancePxData.length - 1] + 16}px)`;
+        }
     });
   </script>
 </body>
