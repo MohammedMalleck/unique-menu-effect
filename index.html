@@ -33,8 +33,10 @@ height:100%;
 animation:coverCircle 2s ease forwards;
 }
 .shape-icon{
-  animation:moveToSun 2s ease forwards;
-transform-origin:center center;
+  -webkit-animation: moveToSun 2s ease forwards;
+  animation: moveToSun 2s ease forwards;
+  -webkit-transform-origin: center center;
+  transform-origin: center center;
 }
 
 @keyframes coverCircle{
