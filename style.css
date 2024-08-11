@@ -5,12 +5,12 @@
   background-color:green;
   display:flex;
   align-items:center;
-  justify-content:cetner;
+  justify-content:center;
 }
 svg{
   display:flex;
   align-items:center;
-  justify-content:cetner;
+  justify-content:center;
   overflow:visible;
   width:100%;
   height:100%;
@@ -31,6 +31,10 @@ svg rect{
     animation: moveToSun 2s ease forwards;
     -webkit-transform-origin: center center;
     transform-origin: center center;
+}
+svg cricle{
+  transform-box: fill-box;
+  transform-origin: center center;
 }
 
 @keyframes coverCircle{
